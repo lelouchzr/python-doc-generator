@@ -143,3 +143,15 @@ uv run mkdocs build --strict
 ```
 
 GitHub Pages is deployed by `.github/workflows/pages.yml` on pushes to `main`.
+
+## Private Dependency Repositories
+
+If `python-rag-framework` or `python-agent-runtime` are private, create a fine-grained GitHub token
+with read-only `Contents` access to both repositories, then add it to this repository as an Actions
+secret:
+
+```text
+DEPENDENCY_REPO_TOKEN
+```
+
+The CI workflow uses this secret to install the Git dependencies during `uv sync --all-extras`.
