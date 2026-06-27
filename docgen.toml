@@ -1,0 +1,18 @@
+[docgen]
+output_dir = "generated-docs"
+sections = ["readme", "architecture", "api", "diagrams", "questions", "roadmap", "summary"]
+exclude = [".venv", "dist", "build", "*.sqlite"]
+rag_results = 5
+llm = "local"
+max_tokens = 1500
+
+# Hosted examples:
+# llm = "openai"
+# model = "gpt-5.5"
+#
+# llm = "anthropic"
+# model = "claude-opus-4-8"
+#
+# llm = "gemini"
+# model = "gemini-3.5-flash"
+

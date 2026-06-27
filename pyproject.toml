@@ -1,0 +1,118 @@
+[project]
+name = "python-doc-generator"
+version = "0.1.0"
+description = "A small CLI that generates useful Markdown documentation from local Python repositories."
+readme = "README.md"
+requires-python = ">=3.12"
+license = "MIT"
+authors = [
+    { name = "Adrien" },
+]
+keywords = [
+    "documentation",
+    "cli",
+    "rag",
+    "agents",
+    "python",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Typing :: Typed",
+]
+dependencies = [
+    "pydantic>=2.8,<3",
+    "python-agent-runtime @ git+https://github.com/lelouchzr/python-agent-runtime.git@cdbf8932c7867af1af0dfbde873430008db6cf5a",
+    "python-rag-framework @ git+https://github.com/lelouchzr/python-rag-framework.git@4b4368a11c8d6ccf05c6ebeba3242f22199868d0",
+    "typer>=0.12,<1",
+]
+
+[project.urls]
+Homepage = "https://github.com/lelouchzr/python-doc-generator"
+Repository = "https://github.com/lelouchzr/python-doc-generator"
+Issues = "https://github.com/lelouchzr/python-doc-generator/issues"
+
+[project.scripts]
+docgen = "docgen.cli:main"
+
+[project.optional-dependencies]
+anthropic = [
+    "anthropic>=0.64",
+]
+dev = [
+    "build>=1.2",
+    "mkdocs-material>=9.5",
+    "mypy>=1.10",
+    "pytest>=8.2",
+    "ruff>=0.5",
+]
+gemini = [
+    "google-genai>=1.0",
+]
+llm = [
+    "anthropic>=0.64",
+    "google-genai>=1.0",
+    "openai>=1.0",
+]
+openai = [
+    "openai>=1.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/docgen"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src",
+    "/tests",
+    "/docs",
+    "/examples",
+    "/README.md",
+    "/CHANGELOG.md",
+    "/docgen.toml",
+    "/LICENSE",
+    "/mkdocs.yml",
+    "/pyproject.toml",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = [
+    "src",
+    "../python-rag-framework/src",
+    "../python-agent-runtime/src",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "B",
+    "E",
+    "F",
+    "I",
+    "UP",
+]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+files = ["src", "tests"]
+mypy_path = [
+    "../python-rag-framework/src",
+    "../python-agent-runtime/src",
+]

@@ -1,0 +1,11 @@
+site_name: Python Doc Generator
+site_description: Generate useful Markdown documentation from local Python repositories.
+theme:
+  name: material
+nav:
+  - Home: index.md
+  - Quick Start: quick-start.md
+  - Architecture: architecture.md
+  - CLI: cli.md
+  - Examples: examples.md
+

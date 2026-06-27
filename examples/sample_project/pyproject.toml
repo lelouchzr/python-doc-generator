@@ -1,0 +1,9 @@
+[project]
+name = "sample-project"
+version = "0.1.0"
+description = "Small sample package for Python Doc Generator."
+requires-python = ">=3.12"
+dependencies = [
+    "pydantic>=2",
+]
+
