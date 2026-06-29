@@ -15,3 +15,4 @@ content with `python-rag-framework`, then runs section generation through `pytho
 - Roadmap suggestions
 - Project summary
 
+See the project roadmap for small, focused improvements planned after the initial portfolio V1.
