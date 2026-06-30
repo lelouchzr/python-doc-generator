@@ -31,3 +31,11 @@ def test_generator_respects_exclude_patterns(sample_repo: Path) -> None:
     analysis, _rag = generator.analyze(sample_repo)
 
     assert all(not module.path.startswith("sample/") for module in analysis.python_modules)
+
+
+def test_generator_inspects_repository(sample_repo: Path) -> None:
+    report = DocumentationGenerator().inspect(sample_repo)
+
+    assert "# Repository Inspection" in report
+    assert "Python modules" in report
+    assert "Service.run" in report

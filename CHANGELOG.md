@@ -10,4 +10,5 @@
 - Added deterministic local generation for examples and tests.
 - Added optional OpenAI, Anthropic and Gemini provider adapters.
 - Added `docgen.toml`, custom exclude patterns, dry-run output preview and example generated docs.
+- Added `docgen inspect` for deterministic repository inspection without writing docs.
 - Added pytest, Ruff, mypy, MkDocs, GitHub Actions CI and GitHub Pages deployment.

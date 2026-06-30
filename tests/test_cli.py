@@ -18,6 +18,11 @@ def test_default_command_injection() -> None:
         "./repo",
         "Question?",
     ]
+    assert _inject_default_command(["docgen", "inspect", "./repo"]) == [
+        "docgen",
+        "inspect",
+        "./repo",
+    ]
 
 
 def test_cli_generates_docs(sample_repo: Path, tmp_path: Path) -> None:
@@ -70,3 +75,16 @@ def test_cli_ask(sample_repo: Path) -> None:
 
     assert result.exit_code == 0, result.output
     assert "Package roots" in result.output
+
+
+def test_cli_inspect(sample_repo: Path) -> None:
+    runner = CliRunner()
+
+    result = runner.invoke(app, ["inspect", str(sample_repo), "--sections", "readme,api"])
+
+    assert result.exit_code == 0, result.output
+    assert "# Repository Inspection" in result.output
+    assert "Scanned files" in result.output
+    assert "`readme`" in result.output
+    assert "`api`" in result.output
+    assert "Service.run" in result.output

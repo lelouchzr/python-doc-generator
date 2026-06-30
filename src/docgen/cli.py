@@ -26,7 +26,7 @@ app = typer.Typer(
     no_args_is_help=True,
 )
 
-_COMMANDS = {"ask", "diagram", "generate"}
+_COMMANDS = {"ask", "diagram", "generate", "inspect"}
 
 
 @app.command(name="generate")
@@ -120,6 +120,41 @@ def ask(
         max_tokens=max_tokens,
     )
     typer.echo(DocumentationGenerator(resolved).ask(repository, question))
+
+
+@app.command()
+def inspect(
+    repository: Annotated[Path, typer.Argument(help="Local repository to analyze.")],
+    config: Annotated[
+        Path | None,
+        typer.Option("--config", "-c", help="Path to docgen.toml."),
+    ] = None,
+    output: Annotated[
+        Path | None,
+        typer.Option("--output", "-o", help="Directory used for generated path previews."),
+    ] = None,
+    sections: Annotated[
+        str | None,
+        typer.Option("--sections", help="Comma-separated sections to inspect."),
+    ] = None,
+    exclude: Annotated[
+        str | None,
+        typer.Option("--exclude", help="Comma-separated exclude patterns."),
+    ] = None,
+    llm: Annotated[
+        LLMProvider | None,
+        typer.Option("--llm", help="LLM provider: local, openai, anthropic or gemini."),
+    ] = None,
+) -> None:
+    """Inspect repository structure without generating documentation."""
+    resolved = _resolve_config(
+        config,
+        output=output,
+        sections=sections,
+        exclude=exclude,
+        llm=llm,
+    )
+    typer.echo(DocumentationGenerator(resolved).inspect(repository))
 
 
 @app.command()

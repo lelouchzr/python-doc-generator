@@ -1,6 +1,6 @@
 """High-level documentation generation workflow."""
 
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Iterable, Sequence
 from pathlib import Path
 from typing import Protocol
 
@@ -19,7 +19,7 @@ from docgen.generators import (
     SummaryGenerator,
 )
 from docgen.integrations import DocumentationAgent, RepositoryRAG
-from docgen.models import GeneratedDocument, RepositoryAnalysis
+from docgen.models import GeneratedDocument, RepositoryAnalysis, RepositoryFile
 from docgen.output import OutputWriter
 from docgen.prompts import section_prompt
 from docgen.repository import Repository
@@ -57,7 +57,21 @@ class DocumentationGenerator:
         self._agent = DocumentationAgent(self._config)
         self._writer = OutputWriter()
 
+    def analyze_repository(self, repository_path: str | Path) -> RepositoryAnalysis:
+        """Run deterministic repository analysis without building a RAG index."""
+        analysis, _files = self._scan_and_analyze(repository_path)
+        return analysis
+
     def analyze(self, repository_path: str | Path) -> tuple[RepositoryAnalysis, RepositoryRAG]:
+        analysis, files = self._scan_and_analyze(repository_path)
+        rag = RepositoryRAG(self._config)
+        rag.index(files)
+        return analysis, rag
+
+    def _scan_and_analyze(
+        self,
+        repository_path: str | Path,
+    ) -> tuple[RepositoryAnalysis, tuple[RepositoryFile, ...]]:
         repository = Repository(repository_path)
         files = self._scanner.scan(repository)
         modules = self._python_analyzer.analyze(files)
@@ -68,9 +82,7 @@ class DocumentationGenerator:
             python_modules=modules,
             dependencies=dependencies,
         )
-        rag = RepositoryRAG(self._config)
-        rag.index(files)
-        return analysis, rag
+        return analysis, files
 
     def generate(self, repository_path: str | Path) -> tuple[GeneratedDocument, ...]:
         analysis, rag = self.analyze(repository_path)
@@ -102,6 +114,11 @@ class DocumentationGenerator:
             self._config.output_dir / _generator_for_section(section).filename
             for section in self._config.sections
         )
+
+    def inspect(self, repository_path: str | Path) -> str:
+        """Return a deterministic repository inspection report."""
+        analysis = self.analyze_repository(repository_path)
+        return _format_inspection(analysis, self._config, self.preview_paths())
 
     def ask(self, repository_path: str | Path, question: str) -> str:
         analysis, rag = self.analyze(repository_path)
@@ -151,3 +168,92 @@ def _renderer(
         return generator.render(analysis, rag)
 
     return render
+
+
+def _format_inspection(
+    analysis: RepositoryAnalysis,
+    config: DocgenConfig,
+    generated_paths: tuple[Path, ...],
+) -> str:
+    structure = analysis.structure
+    dependencies = analysis.dependencies
+    symbol_count = sum(len(module.symbols) for module in analysis.python_modules)
+    lines = [
+        "# Repository Inspection",
+        "",
+        f"- Project: `{structure.project_name}`",
+        f"- Root: `{structure.root}`",
+        f"- Scanned files: {len(structure.files)}",
+        f"- Python modules: {len(analysis.python_modules)}",
+        f"- Public symbols: {symbol_count}",
+        f"- Total scanned lines: {structure.total_lines}",
+        f"- Tests detected: {_yes_no(structure.has_tests)}",
+        f"- Docs detected: {_yes_no(structure.has_docs)}",
+        f"- CI detected: {_yes_no(structure.has_ci)}",
+        f"- LLM provider: `{config.llm_provider.value}`",
+        "",
+        "## Sections",
+        "",
+        *_bullet(f"`{section.value}`" for section in config.sections),
+        "",
+        "## File Types",
+        "",
+        *_bullet(
+            f"`{suffix}`: {count}" for suffix, count in structure.file_counts_by_suffix.items()
+        ),
+        "",
+        "## Package Roots",
+        "",
+        *_bullet(f"`{root}`" for root in structure.package_roots),
+        "",
+        "## Dependencies",
+        "",
+        "- Runtime:",
+        *_indented_bullet(f"`{dependency}`" for dependency in dependencies.runtime),
+        "- Development:",
+        *_indented_bullet(f"`{dependency}`" for dependency in dependencies.development),
+        "- Imported packages:",
+        *_indented_bullet(f"`{dependency}`" for dependency in dependencies.imported_packages[:20]),
+        "",
+        "## CLI Scripts",
+        "",
+        *_bullet(f"`{name}` -> `{target}`" for name, target in dependencies.scripts.items()),
+        "",
+        "## Python Modules",
+        "",
+        *_bullet(
+            f"`{module.module}` ({module.path}) - {len(module.symbols)} symbols"
+            for module in analysis.python_modules
+        ),
+        "",
+        "## Public Symbols",
+        "",
+        *_bullet(
+            f"`{symbol.name}` ({symbol.kind}, {symbol.path}:{symbol.lineno})"
+            for module in analysis.python_modules
+            for symbol in module.symbols[:50]
+        ),
+        "",
+        "## Generated Paths",
+        "",
+        *_bullet(f"`{path}`" for path in generated_paths),
+    ]
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def _bullet(items: Iterable[object]) -> list[str]:
+    values = [str(item) for item in items]
+    if not values:
+        return ["- None detected."]
+    return [f"- {value}" for value in values]
+
+
+def _indented_bullet(items: Iterable[object]) -> list[str]:
+    values = [str(item) for item in items]
+    if not values:
+        return ["  - None detected."]
+    return [f"  - {value}" for value in values]
+
+
+def _yes_no(value: bool) -> str:
+    return "yes" if value else "no"

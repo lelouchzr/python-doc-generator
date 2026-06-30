@@ -27,6 +27,18 @@ Supported sections:
 docgen ask ./repo "How does configuration work?"
 ```
 
+## Inspect
+
+```bash
+docgen inspect ./repo
+docgen inspect ./repo --sections readme,api
+docgen inspect ./repo --exclude .venv,dist,*.sqlite
+```
+
+`inspect` prints repository analysis without generating documentation. It reports scanned files,
+Python modules, public symbols, package roots, dependencies, CLI scripts, enabled sections and
+generated path previews.
+
 ## Diagram
 
 ```bash

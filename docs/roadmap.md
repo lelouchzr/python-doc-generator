@@ -3,11 +3,11 @@
 This roadmap keeps the project intentionally small. Each item should be useful on its own, easy to
 test, and avoid turning Python Doc Generator into a large documentation platform.
 
-## Next
+## Completed
 
 ### `docgen inspect`
 
-Add a command that prints a deterministic repository analysis without generating documentation:
+Added a command that prints deterministic repository analysis without generating documentation:
 
 ```bash
 docgen inspect ./repo
@@ -22,6 +22,8 @@ It should report:
 - runtime and development dependencies
 - CLI scripts from `pyproject.toml`
 - enabled documentation sections
+
+## Next
 
 ### `--exclude-tests`
 
@@ -114,4 +116,3 @@ docgen diff ./repo
 ```
 
 It should identify missing generated files and obvious stale docs. Keep this text-based and simple.
-

@@ -24,6 +24,12 @@ Ask a question:
 uv run docgen ask ./examples/sample_project "What does the package expose?"
 ```
 
+Inspect a repository without generating files:
+
+```bash
+uv run docgen inspect ./examples/sample_project
+```
+
 Print diagrams:
 
 ```bash
